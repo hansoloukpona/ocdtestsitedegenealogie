@@ -12,14 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('relationships', function (Blueprint $table) {
-            $table->unsignedBigInteger('id', false)->length(20);
+            $table->unsignedBigInteger('id', true)->length(20);
             $table->unsignedBigInteger('created_by')->length(20)->notNullable();
             $table->unsignedBigInteger('parent_id')->length(20)->notNullable();
             $table->unsignedBigInteger('child_id')->length(20)->notNullable();
             $table->timestamps();
 
             // Index
-            $table->primary('id');
             $table->index('created_by');
             $table->foreign('parent_id')->references('id')->on('people');
             $table->foreign('child_id')->references('id')->on('people');

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
-class People extends Model
+class People extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'people';
 
@@ -18,8 +20,18 @@ class People extends Model
         'birth_name',
         'middle_names',
         'date_of_birth',
+        'email',
+        'password',
+    ];
+    
+    protected $hidden = [
+        'password', 'remember_token',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+    
     public function children()
     {
         return $this->belongsToMany(

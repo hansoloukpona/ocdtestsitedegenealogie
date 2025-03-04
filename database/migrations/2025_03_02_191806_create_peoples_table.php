@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('people', function (Blueprint $table) {
-            $table->unsignedBigInteger('id', false)->length(20);
+            $table->unsignedBigInteger('id', true)->length(20);
             $table->unsignedBigInteger('created_by')->length(20)->notNullable();
             $table->string('first_name', 255)->collation('utf8mb4_unicode_ci')->notNullable();
             $table->string('last_name', 255)->collation('utf8mb4_unicode_ci')->notNullable();
@@ -22,7 +22,6 @@ return new class extends Migration
             $table->timestamps();
 
             // Index
-            $table->primary('id');
             $table->index('created_by');
         });
     }
