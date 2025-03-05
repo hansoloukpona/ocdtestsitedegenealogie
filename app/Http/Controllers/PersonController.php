@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\People;
+use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class PeopleController extends Controller
+class PersonController extends Controller
 {
 
     public function index()
     {
-        $people = People::with('creator')->paginate(10);  // Chargement avec l'utilisateur créateur
+        $people = Person::with('creator')->paginate(10);  // Chargement avec l'utilisateur créateur
         return view('people.index', compact('people'));
     }
 
     public function show($id)
     {
-        $people = People::with(['children', 'parents'])->findOrFail($id);
+        $people = Person::with(['children', 'parents'])->findOrFail($id);
         return view('people.show', compact('people'));
     }
 
@@ -57,7 +58,7 @@ class PeopleController extends Controller
 
         // Enregistrement dans la base de données
         try {
-            $person = People::create($validatedData);
+            $person = Person::create($validatedData);
             //$person = $people->save();
 
             $cleanFirstName = preg_replace('/[^a-zA-Z]/', '', $person->first_name);
@@ -77,7 +78,71 @@ class PeopleController extends Controller
 
             return redirect()->route('people.index')->with('success', 'Nouvelle personne ajoutée avec succès.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'ajout.'.$e])->withInput();
+            return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'ajout.' . $e])->withInput();
         }
+    }
+
+    public function getDegreeBetween($id1, $id2)
+    {
+        $person1 = Person::findOrFail($id1);
+        $degree = $person1->getDegreeWith($id2);
+
+        if ($degree === false) {
+            return response()->json([
+                'message' => 'Le degré de parenté est supérieur à 25 ou les personnes ne sont pas liées.',
+                'degree' => null
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Degré de parenté trouvé.',
+            'degree' => $degree
+        ]);
+    }
+
+    public function showDegreeForm(Request $request)
+    {
+        $validatedData = $request->validate([
+            'id2' => 'required|numeric',
+        ]);
+
+        $idOfTargetUser = $validatedData['id2'];
+
+        $idOfCurrentUser = Auth::id();
+
+        $person1 = Person::findOrFail($idOfCurrentUser);
+
+        // Vérifier si l'ID cible est fourni
+        if ($idOfTargetUser) {
+            $person2 = Person::find($idOfTargetUser);
+    
+            if (!$person2) {
+                return view('people.show', [
+                    'people' => $person1,
+                    'error' => 'Personne cible introuvable.'
+                ]);
+            }
+            
+            //DB::enableQueryLog();
+            //$timestart = microtime(true);
+
+            $degree = $person1->getDegreeWith($person2->id);
+
+            // dd(["degree"=>$degree, "time"=>microtime(true)-$timestart, "nb_queries"=>count(DB::getQueryLog())]);
+
+            if ($degree === false) {
+                return view('people.show', [
+                    'people' => $person1,
+                    'error' => 'Le degré de parenté est supérieur à 25 ou les personnes ne sont pas liées.'
+                ]);
+            }
+
+            return view('people.show', [
+                'people' => $person1,
+                'degree' => $degree
+            ]);
+        }
+
+        return view('people.show', ['people' => $person1]);
     }
 }

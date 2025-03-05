@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PeopleController;
+use App\Http\Controllers\PersonController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -16,18 +16,18 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Auth::routes();
-
 // Routes d'authentification
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::get('/', [PeopleController::class, 'index']);
-Route::get('/people', [PeopleController::class, 'index'])->name('people.index');
-Route::get('/people/create', [PeopleController::class, 'create'])->name('people.create');
+Route::get('/', [PersonController::class, 'index']);
+Route::get('/people', [PersonController::class, 'index'])->name('people.index');
+Route::get('/people/create', [PersonController::class, 'create'])->name('people.create');
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('/people', [PeopleController::class, 'store'])->name('people.store');
-    Route::get('/people/{id}', [PeopleController::class, 'show'])->name('people.show');
+    Route::post('/people', [PersonController::class, 'store'])->name('people.store');
+    Route::get('/people/{id}', [PersonController::class, 'show'])->name('people.show');
+    Route::get('/degree-between/{id1}/{id2}', [PersonController::class, 'getDegreeBetween'])->name('degree.between');
+    Route::post('/show-degree-form', [PersonController::class, 'showDegreeForm'])->name('show.degree.form');
 });

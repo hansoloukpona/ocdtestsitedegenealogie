@@ -19,7 +19,7 @@ return new class extends Migration
             $table->rememberToken()->after('email_verified_at');
         });
 
-        $people = \App\Models\People::all();
+        $people = \App\Models\Person::all();
         foreach ($people as $person) {
 
             $cleanFirstName = preg_replace('/[^a-zA-Z]/', '', $person->first_name);
